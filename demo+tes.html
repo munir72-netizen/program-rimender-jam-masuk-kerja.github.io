@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Test Reminder & Sirine</title>
+</head>
+<body>
+  <h1>Test Reminder (20s) + Sirine (60s)</h1>
+  <button onclick="startReminder()">Mulai</button>
+  <button onclick="stopReminder()">Stop</button>
+
+  <p id="countdownReminder">Reminder umum berikutnya: -</p>
+  <p id="countdownText">Alarm berikutnya: -</p>
+
+  <!-- Reminder beep -->
+  <audio id="reminderSound" src="Alarm-Clock Sound!!!.mp3" preload="auto"></audio>
+
+  <!-- Sirine -->
+  <audio id="sirineSound" src="air-raid-siren-sound-effect-241383.mp3" preload="auto"></audio>
+
+  <script>
+    let reminderInterval;
+    let sirineInterval;
+    let reminderCountdownTimer;
+
+    let sirineActive = false; // status sirine aktif
+
+    // Interval reminder & sirine (test mode)
+    const reminderIntervalMs = 20000; // 20 detik
+    const sirineIntervalMs   = 60000; // 60 detik
+
+    function startReminder() {
+      if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+
+      runReminder();
+      runSirine();
+
+      alert("Test dimulai: Reminder tiap 20 detik, Sirine tiap 60 detik.");
+    }
+
+    function stopReminder() {
+      clearInterval(reminderInterval);
+      clearInterval(sirineInterval);
+      clearInterval(reminderCountdownTimer);
+      document.getElementById("countdownReminder").innerText = "Reminder umum berikutnya: -";
+      document.getElementById("countdownText").innerText = "Alarm berikutnya: -";
+    }
+
+    function runReminder() {
+      triggerReminder(); // jalankan pertama kali
+      reminderInterval = setInterval(triggerReminder, reminderIntervalMs);
+      startReminderCountdown();
+    }
+
+    function triggerReminder() {
+      if (sirineActive) {
+        console.log("Reminder dilewati karena sirine sedang aktif.");
+        startReminderCountdown();
+        return;
+      }
+
+      let reminder = document.getElementById("reminderSound");
+      reminder.currentTime = 0;
+      reminder.play();
+
+      if (Notification.permission === "granted") {
+        new Notification("Reminder!", { body: "Sudah waktunya tetap terjaga!" });
+      }
+
+      startReminderCountdown();
+    }
+
+    function startReminderCountdown() {
+      clearInterval(reminderCountdownTimer);
+      let remaining = reminderIntervalMs / 1000;
+
+      reminderCountdownTimer = setInterval(() => {
+        if (remaining <= 0) {
+          clearInterval(reminderCountdownTimer);
+        } else {
+          remaining--;
+          let minutes = Math.floor(remaining / 60);
+          let seconds = remaining % 60;
+          document.getElementById("countdownReminder").innerText =
+            `Reminder umum berikutnya: ${minutes} menit ${seconds} detik lagi`;
+        }
+      }, 1000);
+    }
+
+    function runSirine() {
+      playSirine("Sirine pertama!");
+      sirineInterval = setInterval(() => {
+        playSirine("Sirine interval berikutnya!");
+      }, sirineIntervalMs);
+    }
+
+    function playSirine(msg) {
+      sirineActive = true;
+
+      let sirine = document.getElementById("sirineSound");
+      sirine.currentTime = 0;
+      sirine.play();
+
+      if (Notification.permission === "granted") {
+        new Notification("Jadwal Kerja!", { body: msg });
+      }
+
+      document.getElementById("countdownText").innerText = msg;
+
+      // Anggap durasi sirine 15 detik
+      setTimeout(() => {
+        sirine.pause();
+        sirine.currentTime = 0;
+        sirineActive = false;
+      }, 15000);
+    }
+  </script>
+</body>
+</html>

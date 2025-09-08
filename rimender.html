@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Reminder Test dengan YouTube Alarm</title>
+</head>
+<body>
+  <h1>Reminder Test (5 detik)</h1>
+  <button onclick="startReminder()">Mulai Reminder</button>
+  <button onclick="stopReminder()">Hentikan Reminder</button>
+
+  <!-- Audio dari sumber Alarm Clock Sound YouTube -->
+  <!--  Pastikan kamu menaruh file mp3 hasil konversi di folder yang sama -->
+  <audio id="alarmSound" src="Alarm-Clock Sound!!!.mp3" preload="auto"></audio>
+
+  <script>
+    let reminderInterval;
+
+    function startReminder() {
+      if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+
+      //  Tes interval: 5 detik → GANTI ke 3600000 nanti (1 jam)
+      reminderInterval = setInterval(() => {
+        document.getElementById("alarmSound").play();
+        if (Notification.permission === "granted") {
+          new Notification("Reminder!", {
+            body: "Waktu istirahat—tetap semangat!",
+          });
+        }
+      }, 5000); // <-- UBAH ke 3600000 (1 jam) nanti
+      //  Akhir tanda interval
+
+      alert("Reminder dimulai. Akan bunyi setiap 5 detik (tes).");
+    }
+
+    function stopReminder() {
+      clearInterval(reminderInterval);
+      alert("Reminder dihentikan.");
+    }
+  </script>
+</body>
+</html>

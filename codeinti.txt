@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Reminder + Jadwal Alarm + Countdown</title>
+</head>
+<body>
+  <h1>Reminder + Jadwal Alarm</h1>
+  <button onclick="startReminder()">Mulai Reminder</button>
+  <button onclick="stopReminder()">Hentikan Reminder</button>
+
+  <p id="countdownText">Alarm berikutnya: -</p>
+
+  <!-- Reminder beep -->
+  <audio id="reminderSound" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+
+  <!-- Sirine (untuk jam masuk, istirahat, pulang) -->
+  <audio id="sirineSound" src="https://www.soundjay.com/industrial/siren-01.wav" preload="auto"></audio>
+
+  <script>
+    let reminderInterval;
+    let scheduleChecker;
+    let countdownTimer;
+
+    function startReminder() {
+      if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+      }
+
+      // 🔔 Reminder umum (TES = 5 detik → nanti ganti ke 3600000 ms)
+      reminderInterval = setInterval(() => {
+        document.getElementById("reminderSound").play();
+        if (Notification.permission === "granted") {
+          new Notification("Reminder!", {
+            body: "Sudah waktunya tetap terjaga!",
+          });
+        }
+      }, 5000); // <-- UBAH ke 3600000 (1 jam) nanti
+
+      // 🔔 Pengecekan jadwal khusus + countdown setiap detik
+      scheduleChecker = setInterval(() => {
+        checkSchedule();
+        updateCountdown();
+      }, 1000);
+
+      alert("Reminder & jadwal alarm dimulai.");
+    }
+
+    function stopReminder() {
+      clearInterval(reminderInterval);
+      clearInterval(scheduleChecker);
+      clearInterval(countdownTimer);
+      document.getElementById("countdownText").innerText = "Alarm berikutnya: -";
+      alert("Semua reminder & alarm dihentikan.");
+    }
+
+    function checkSchedule() {
+      const now = new Date();
+      const day = now.getDay(); // Minggu=0, Senin=1, ..., Sabtu=6
+      const hour = now.getHours();
+      const minute = now.getMinutes();
+      const second = now.getSeconds();
+
+      // Buat string jam:menit:detik
+      const currentTime = hour.toString().padStart(2, '0') + ":" +
+                          minute.toString().padStart(2, '0') + ":" +
+                          second.toString().padStart(2, '0');
+
+      // Jadwal Senin - Kamis
+      const scheduleMonThu = ["08:00:00", "12:00:00", "13:00:00", "17:00:00"];
+      // Jadwal Jumat
+      const scheduleFri = ["08:00:00", "11:30:00", "12:30:00", "17:00:00"];
+
+      if (day >= 1 && day <= 4) { // Senin - Kamis
+        if (scheduleMonThu.includes(currentTime)) {
+          playSirine("Alarm jadwal (Senin-Kamis) pada " + currentTime);
+        }
+      } else if (day === 5) { // Jumat
+        if (scheduleFri.includes(currentTime)) {
+          playSirine("Alarm jadwal (Jumat) pada " + currentTime);
+        }
+      }
+    }
+
+    function playSirine(msg) {
+      document.getElementById("sirineSound").play();
+      if (Notification.permission === "granted") {
+        new Notification("Jadwal Kerja!", {
+          body: msg,
+        });
+      }
+      alert(msg);
+    }
+
+    function updateCountdown() {
+      const now = new Date();
+      const day = now.getDay();
+
+      // Tentukan jadwal hari ini
+      let todaySchedule = [];
+      if (day >= 1 && day <= 4) {
+        todaySchedule = ["08:00:00", "12:00:00", "13:00:00", "17:00:00"];
+      } else if (day === 5) {
+        todaySchedule = ["08:00:00", "11:30:00", "12:30:00", "17:00:00"];
+      } else {
+        document.getElementById("countdownText").innerText = "Hari libur, tidak ada alarm.";
+        return;
+      }
+
+      // Cari alarm berikutnya
+      let nextAlarm = null;
+      for (let t of todaySchedule) {
+        let [h, m, s] = t.split(":").map(Number);
+        let alarmTime = new Date(now);
+        alarmTime.setHours(h, m, s, 0);
+        if (alarmTime > now) {
+          nextAlarm = alarmTime;
+          break;
+        }
+      }
+
+      if (!nextAlarm) {
+        document.getElementById("countdownText").innerText = "Tidak ada alarm berikutnya hari ini.";
+        return;
+      }
+
+      // Hitung selisih waktu
+      let diff = Math.floor((nextAlarm - now) / 1000); // detik
+      let hours = Math.floor(diff / 3600);
+      let minutes = Math.floor((diff % 3600) / 60);
+      let seconds = diff % 60;
+
+      const timeStr = nextAlarm.toTimeString().split(" ")[0].slice(0,5);
+      document.getElementById("countdownText").innerText =
+        `Alarm berikutnya: ${timeStr} (${hours} jam ${minutes} menit ${seconds} detik lagi)`;
+    }
+  </script>
+</body>
+</html>
