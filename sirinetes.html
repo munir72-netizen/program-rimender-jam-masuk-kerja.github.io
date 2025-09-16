@@ -54,9 +54,16 @@
         </div>
 
         <!-- Sirine -->
-        <div class="p-3 bg-white rounded border">
+        <div class="p-3 bg-white rounded mb-3 border">
           <p id="countdownText" class="mb-0 fw-bold text-danger">
             <i class="bi bi-broadcast-pin"></i> Alarm berikutnya: -
+          </p>
+        </div>
+
+        <!-- Lagu Hymne Sinarmas -->
+        <div class="p-3 bg-white rounded border">
+          <p id="anthemCountdown" class="mb-0 fw-bold text-success">
+            <i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: -
           </p>
         </div>
       </div>
@@ -72,14 +79,21 @@
       preload="auto"
     ></audio>
 
+    <!-- Lagu Hyne Sinarmas -->
+    <audio
+      id="anthem"
+      src="Sinar Mas Song 2020 (Official Video) - Hymne Sinar Mas - Sinar Mas.mp3"
+      preload="auto"
+    ></audio>
+
     <script>
       let scheduleChecker;
       let reminderCountdownTimer;
       let sirineActive = false;
 
       // Reminder 1 jam sekali
-      const reminderIntervalMs = 3600000; // 1 jam = 3600000 ms
-      let nextReminderTime = null; // jadwal reminder berikutnya
+      const reminderIntervalMs = 3600000;
+      let nextReminderTime = null;
 
       // Jadwal Senin–Kamis & Jumat
       const schedule = {
@@ -87,22 +101,30 @@
         Fri: ["08:00:00", "11:30:00", "12:30:00", "17:00:00"],
       };
 
+      // Lagu Indonesia Raya
+      const anthemDuration = 145; // detik, ganti sesuai durasi file
+      const anthemEndHour = 7;
+      const anthemEndMinute = 59;
+      const anthemEndSecond = 59;
+      let anthemStarted = false;
+
       function startReminder() {
         if (Notification.permission !== "granted") {
           Notification.requestPermission();
         }
 
-        scheduleNextReminder(); // buat jadwal reminder pertama
+        scheduleNextReminder();
 
-        // Cek jadwal tiap detik
         scheduleChecker = setInterval(() => {
           checkSchedule();
           updateCountdownSchedule();
-          checkReminder(); // cek apakah sudah waktunya reminder
+          checkReminder();
+          checkAnthem();
+          updateAnthemCountdown();
         }, 1000);
 
         alert(
-          "Reminder aktif setiap 1 jam. Sirine sesuai jadwal Senin–Kamis & Jumat."
+          "Reminder aktif setiap 1 jam. Sirine sesuai jadwal Senin–Kamis & Jumat. Lagu Hymne Sinarmas otomatis sebelum jam 08:00."
         );
       }
 
@@ -110,17 +132,20 @@
         clearInterval(scheduleChecker);
         clearInterval(reminderCountdownTimer);
         nextReminderTime = null;
+        anthemStarted = false;
         document.getElementById("countdownReminder").innerHTML =
           '<i class="bi bi-bell-fill"></i> Reminder umum berikutnya: -';
         document.getElementById("countdownText").innerHTML =
           '<i class="bi bi-broadcast-pin"></i> Alarm berikutnya: -';
+        document.getElementById("anthemCountdown").innerHTML =
+          '<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: -';
       }
 
+      // ================== Reminder ===================
       function scheduleNextReminder() {
         const now = new Date();
         let candidate = new Date(now.getTime() + reminderIntervalMs);
 
-        // cari jam berikutnya yang tidak tabrakan dengan jadwal sirine
         while (isConflictWithSchedule(candidate)) {
           candidate = new Date(candidate.getTime() + reminderIntervalMs);
         }
@@ -180,11 +205,12 @@
         }, 1000);
       }
 
+      // ================== Jadwal Sirine ===================
       function getTodaySchedule() {
-        const day = new Date().getDay(); // 0=Sunday, 1=Monday,...,5=Friday
+        const day = new Date().getDay();
         if (day >= 1 && day <= 4) return schedule["MonThu"];
         if (day === 5) return schedule["Fri"];
-        return []; // Sabtu/Minggu kosong
+        return [];
       }
 
       function isConflictWithSchedule(date) {
@@ -226,7 +252,6 @@
           "countdownText"
         ).innerHTML = `<i class="bi bi-broadcast-pin"></i> ${msg}`;
 
-        // Anggap durasi sirine 15 detik
         setTimeout(() => {
           sirine.pause();
           sirine.currentTime = 0;
@@ -265,6 +290,75 @@
         ).innerHTML = `<i class="bi bi-broadcast-pin"></i> Alarm berikutnya: ${timeStr} (${minutes} menit ${seconds} detik lagi)`;
       }
 
+      // ================== Lagu Hymne Sinarmas ===================
+      function getAnthemStartTime() {
+        const today = new Date();
+        let anthemStart = new Date(today);
+        anthemStart.setHours(
+          anthemEndHour,
+          anthemEndMinute,
+          anthemEndSecond - anthemDuration,
+          0
+        );
+        return anthemStart;
+      }
+
+      function checkAnthem() {
+        if (anthemStarted) return;
+
+        const now = new Date();
+        const anthemStart = getAnthemStartTime();
+
+        if (
+          now >= anthemStart &&
+          now <= new Date(anthemStart.getTime() + 1000)
+        ) {
+          playAnthem();
+          anthemStarted = true;
+        }
+      }
+
+      function updateAnthemCountdown() {
+        if (anthemStarted) {
+          document.getElementById("anthemCountdown").innerHTML =
+            '<i class="bi bi-music-note-beamed"></i> 🎶 Sedang memutar: Hymne Sinarmas';
+          return;
+        }
+
+        const now = new Date();
+        const anthemStart = getAnthemStartTime();
+
+        if (now < anthemStart) {
+          let diff = Math.floor((anthemStart - now) / 1000);
+          let minutes = Math.floor(diff / 60);
+          let seconds = diff % 60;
+          document.getElementById(
+            "anthemCountdown"
+          ).innerHTML = `<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas akan diputar dalam ${minutes} menit ${seconds} detik`;
+        } else {
+          document.getElementById("anthemCountdown").innerHTML =
+            '<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: sudah diputar hari ini.';
+        }
+      }
+
+      function playAnthem() {
+        let anthem = document.getElementById("anthem");
+        anthem.currentTime = 0;
+        anthem.play();
+
+        if (Notification.permission === "granted") {
+          new Notification("Hymne Sinarmas!", {
+            body: "Hymne Sinarmas.",
+          });
+        }
+
+        setTimeout(() => {
+          anthem.pause();
+          anthem.currentTime = 0;
+        }, anthemDuration * 1000);
+      }
+
+      // ================== Jam Digital ===================
       function updateClock() {
         const now = new Date();
         let hours = now.getHours().toString().padStart(2, "0");
@@ -276,7 +370,7 @@
       }
 
       setInterval(updateClock, 1000);
-      updateClock(); // panggil langsung pertama kali
+      updateClock();
     </script>
   </body>
 </html>
