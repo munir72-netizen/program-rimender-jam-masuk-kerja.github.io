@@ -10,6 +10,9 @@
     <button onclick="startReminder()">Mulai</button>
     <button onclick="stopReminder()">Stop</button>
 
+    <!-- Info waktu mulai -->
+    <p id="startTime">Waktu mulai: -</p>
+
     <p id="countdownAnthem">Hymne Sinarmas berikutnya: -</p>
     <p id="countdownText">Sirine berikutnya: -</p>
     <p id="countdownReminder">Reminder umum berikutnya: -</p>
@@ -43,17 +46,38 @@
       const anthemIntervalMs = 90000; // 90 detik
 
       // Durasi asli Hymne Sinarmas
-      const anthemDuration = 145; // detik (2 menit 25 detik)
+      const anthemDuration = 33; // detik (33 detik)
 
       let nextReminderTime = null;
       let nextSirineTime = null;
       let nextAnthemTime = null;
 
+      // ================== Start & Stop ==================
       function startReminder() {
         if (Notification.permission !== "granted") {
           Notification.requestPermission();
         }
 
+        // 🔹 Catat waktu mulai
+        const now = new Date();
+        const days = [
+          "Minggu",
+          "Senin",
+          "Selasa",
+          "Rabu",
+          "Kamis",
+          "Jumat",
+          "Sabtu",
+        ];
+        const dayName = days[now.getDay()];
+        const dateStr = now.toLocaleDateString("id-ID");
+        const timeStr = now.toLocaleTimeString("id-ID");
+
+        document.getElementById(
+          "startTime"
+        ).innerText = `Waktu mulai: ${dayName}, ${dateStr} ${timeStr}`;
+
+        // Mulai schedule
         scheduleNextAnthem();
         scheduleNextSirine();
         scheduleNextReminder();
@@ -67,7 +91,7 @@
         }, 500);
 
         alert(
-          "Test dimulai: Reminder=20s, Sirine=60s, Hymne=90s (prioritas Hymne > Sirine > Reminder)."
+          "Test dimulai: Reminder=20s, Sirine=60s, Hymne=90s (prioritas Hymne > Sirine > Reminder jika bersamaan)."
         );
       }
 
@@ -83,6 +107,7 @@
           "Sirine berikutnya: -";
         document.getElementById("countdownAnthem").innerText =
           "Hymne Sinarmas berikutnya: -";
+        document.getElementById("startTime").innerText = "Waktu mulai: -";
       }
 
       // ================= Reminder =================
