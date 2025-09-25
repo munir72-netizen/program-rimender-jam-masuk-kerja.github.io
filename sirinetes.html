@@ -59,6 +59,13 @@
           </p>
         </div>
 
+        <!-- Lagu Indonesia Raya -->
+        <div class="p-3 bg-white rounded mb-3 border">
+          <p id="indonesiaRayaCountdown" class="mb-0 fw-bold text-primary">
+            <i class="bi bi-music-note-beamed"></i> Lagu Indonesia Raya: -
+          </p>
+        </div>
+
         <!-- Lagu Hymne Sinarmas -->
         <div class="p-3 bg-white rounded border">
           <p id="anthemCountdown" class="mb-0 fw-bold text-success">
@@ -78,7 +85,14 @@
       preload="auto"
     ></audio>
 
-    <!-- Lagu Hyne Sinarmas -->
+    <!-- Lagu Indonesia Raya -->
+    <audio
+      id="indonesiaRaya"
+      src="Indonesia Raya 🇮🇩🇮🇩 - Ciptaan W.R. Supratman (Lirik Lagu) - Lagu Kebangsaan Indonesia [A2Uccg2OMtc].mp3"
+      preload="auto"
+    ></audio>
+
+    <!-- Lagu Hymne Sinarmas -->
     <audio
       id="anthem"
       src="Sinar Mas Song 2020 (Official Video) - Hymne Sinar Mas - Sinar Mas.mp3"
@@ -89,7 +103,14 @@
       let scheduleChecker;
       let reminderCountdownTimer;
       let sirineActive = false;
-      let anthemActive = false; // 🔑 tambahan flag Hymne
+      let anthemActive = false;
+      let indonesiaRayaActive = false;
+
+      // Flag pemutaran harian
+      let anthemStarted = false;
+      let indonesiaRayaStarted = false;
+      let lastAnthemDate = null;
+      let lastIndonesiaRayaDate = null;
 
       // Reminder 1 jam sekali
       const reminderIntervalMs = 3600000;
@@ -101,12 +122,17 @@
         Fri: ["08:00:00", "11:30:00", "12:30:00", "17:00:00"],
       };
 
-      // Lagu Hymne Sinarmas
-      const anthemDuration = 145; // detik
+      // Indonesia Raya
+      const indonesiaRayaDuration = 110; // 1m50s
+      const indonesiaRayaStartHour = 7;
+      const indonesiaRayaStartMinute = 57;
+      const indonesiaRayaStartSecond = 36;
+
+      // Hymne Sinarmas
+      const anthemDuration = 33; // 33 detik
       const anthemEndHour = 7;
       const anthemEndMinute = 59;
       const anthemEndSecond = 59;
-      let anthemStarted = false;
 
       // ================== Start & Stop ===================
       function startReminder() {
@@ -140,12 +166,14 @@
           checkSchedule();
           updateCountdownSchedule();
           checkReminder();
+          checkIndonesiaRaya();
+          updateIndonesiaRayaCountdown();
           checkAnthem();
           updateAnthemCountdown();
         }, 1000);
 
         alert(
-          "Reminder aktif setiap 1 jam. Sirine sesuai jadwal Senin–Kamis & Jumat. Lagu Hymne Sinarmas otomatis sebelum jam 08:00. Prioritas: Hymne > Sirine > Reminder."
+          "Reminder aktif setiap 1 jam. Prioritas: Indonesia Raya > Hymne Sinarmas > Sirine > Reminder."
         );
       }
 
@@ -156,10 +184,14 @@
         anthemStarted = false;
         sirineActive = false;
         anthemActive = false;
+        indonesiaRayaActive = false;
+        indonesiaRayaStarted = false;
         document.getElementById("countdownReminder").innerHTML =
           '<i class="bi bi-bell-fill"></i> Reminder umum berikutnya: -';
         document.getElementById("countdownText").innerHTML =
           '<i class="bi bi-broadcast-pin"></i> Alarm berikutnya: -';
+        document.getElementById("indonesiaRayaCountdown").innerHTML =
+          '<i class="bi bi-music-note-beamed"></i> Lagu Indonesia Raya: -';
         document.getElementById("anthemCountdown").innerHTML =
           '<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: -';
         document.getElementById("startTime").innerHTML =
@@ -190,8 +222,10 @@
       }
 
       function triggerReminder() {
-        if (sirineActive || anthemActive) {
-          console.log("Reminder dilewati karena sirine/Hymne sedang aktif.");
+        if (sirineActive || anthemActive || indonesiaRayaActive) {
+          console.log(
+            "Reminder dilewati karena ada event prioritas lebih tinggi."
+          );
           scheduleNextReminder();
           return;
         }
@@ -264,8 +298,10 @@
       }
 
       function playSirine(msg) {
-        if (anthemActive) {
-          console.log("Sirine dilewati karena Hymne sedang aktif.");
+        if (indonesiaRayaActive || anthemActive) {
+          console.log(
+            "Sirine dilewati karena ada event prioritas lebih tinggi."
+          );
           return;
         }
 
@@ -319,6 +355,76 @@
         ).innerHTML = `<i class="bi bi-broadcast-pin"></i> Alarm berikutnya: ${timeStr} (${minutes} menit ${seconds} detik lagi)`;
       }
 
+      // ================== Lagu Indonesia Raya ===================
+      function getIndonesiaRayaStartTime() {
+        const today = new Date();
+        let start = new Date(today);
+        start.setHours(
+          indonesiaRayaStartHour,
+          indonesiaRayaStartMinute,
+          indonesiaRayaStartSecond,
+          0
+        );
+        return start;
+      }
+
+      function checkIndonesiaRaya() {
+        if (indonesiaRayaStarted) return;
+
+        const now = new Date();
+        const start = getIndonesiaRayaStartTime();
+
+        if (lastIndonesiaRayaDate === now.toDateString()) return;
+
+        if (now >= start && now <= new Date(start.getTime() + 1000)) {
+          playIndonesiaRaya();
+          indonesiaRayaStarted = true;
+          lastIndonesiaRayaDate = now.toDateString();
+        }
+      }
+
+      function updateIndonesiaRayaCountdown() {
+        if (indonesiaRayaStarted) {
+          document.getElementById("indonesiaRayaCountdown").innerHTML =
+            '<i class="bi bi-music-note-beamed"></i> 🎶 Sedang memutar: Indonesia Raya';
+          return;
+        }
+
+        const now = new Date();
+        const start = getIndonesiaRayaStartTime();
+
+        if (now < start) {
+          let diff = Math.floor((start - now) / 1000);
+          let minutes = Math.floor(diff / 60);
+          let seconds = diff % 60;
+          document.getElementById(
+            "indonesiaRayaCountdown"
+          ).innerHTML = `<i class="bi bi-music-note-beamed"></i> Indonesia Raya akan diputar dalam ${minutes} menit ${seconds} detik`;
+        } else {
+          document.getElementById("indonesiaRayaCountdown").innerHTML =
+            '<i class="bi bi-music-note-beamed"></i> Indonesia Raya: sudah diputar hari ini.';
+        }
+      }
+
+      function playIndonesiaRaya() {
+        indonesiaRayaActive = true;
+        let song = document.getElementById("indonesiaRaya");
+        song.currentTime = 0;
+        song.play();
+
+        if (Notification.permission === "granted") {
+          new Notification("Indonesia Raya!", {
+            body: "Memutar Lagu Indonesia Raya.",
+          });
+        }
+
+        setTimeout(() => {
+          song.pause();
+          song.currentTime = 0;
+          indonesiaRayaActive = false;
+        }, indonesiaRayaDuration * 1000);
+      }
+
       // ================== Lagu Hymne Sinarmas ===================
       function getAnthemStartTime() {
         const today = new Date();
@@ -334,9 +440,12 @@
 
       function checkAnthem() {
         if (anthemStarted) return;
+        if (indonesiaRayaActive) return;
 
         const now = new Date();
         const anthemStart = getAnthemStartTime();
+
+        if (lastAnthemDate === now.toDateString()) return;
 
         if (
           now >= anthemStart &&
@@ -344,6 +453,7 @@
         ) {
           playAnthem();
           anthemStarted = true;
+          lastAnthemDate = now.toDateString();
         }
       }
 
@@ -363,10 +473,10 @@
           let seconds = diff % 60;
           document.getElementById(
             "anthemCountdown"
-          ).innerHTML = `<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas akan diputar dalam ${minutes} menit ${seconds} detik`;
+          ).innerHTML = `<i class="bi bi-music-note-beamed"></i> Hymne Sinarmas akan diputar dalam ${minutes} menit ${seconds} detik`;
         } else {
           document.getElementById("anthemCountdown").innerHTML =
-            '<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: sudah diputar hari ini.';
+            '<i class="bi bi-music-note-beamed"></i> Hymne Sinarmas: sudah diputar hari ini.';
         }
       }
 
@@ -378,7 +488,7 @@
 
         if (Notification.permission === "granted") {
           new Notification("Hymne Sinarmas!", {
-            body: "Hymne Sinarmas.",
+            body: "Memutar Hymne Sinarmas.",
           });
         }
 

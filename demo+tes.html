@@ -2,19 +2,19 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <title>Test Reminder, Sirine & Hymne</title>
+    <title>Test Reminder, Sirine & Blok Nasional</title>
   </head>
   <body>
     <h1><div id="clock">00:00:00</div></h1>
-    <h1>Test: Reminder (20s) + Sirine (60s) + Hymne Sinarmas (90s)</h1>
-    <button onclick="startReminder()">Mulai</button>
-    <button onclick="stopReminder()">Stop</button>
+    <h1>Test: Reminder (20s) + Sirine (60s) + Blok Nasional (90s)</h1>
+    <button onclick="startTest()">Mulai</button>
+    <button onclick="stopTest()">Stop</button>
 
     <!-- Info waktu mulai -->
     <p id="startTime">Waktu mulai: -</p>
 
-    <p id="countdownAnthem">Hymne Sinarmas berikutnya: -</p>
-    <p id="countdownText">Sirine berikutnya: -</p>
+    <p id="countdownBlock">Blok Nasional berikutnya: -</p>
+    <p id="countdownSirine">Sirine berikutnya: -</p>
     <p id="countdownReminder">Reminder umum berikutnya: -</p>
 
     <!-- Reminder beep -->
@@ -24,6 +24,13 @@
     <audio
       id="sirineSound"
       src="air-raid-siren-sound-effect-241383.mp3"
+      preload="auto"
+    ></audio>
+
+    <!-- Indonesia Raya -->
+    <audio
+      id="indoSound"
+      src="cut Indonesia Raya 🇮🇩🇮🇩 - Ciptaan W (mp3cut.net).mp3"
       preload="auto"
     ></audio>
 
@@ -37,76 +44,59 @@
     <script>
       let checker;
       let reminderCountdownTimer;
+
       let sirineActive = false;
-      let anthemActive = false;
+      let nationalBlockActive = false;
 
       // Interval (test mode)
       const reminderIntervalMs = 20000; // 20 detik
       const sirineIntervalMs = 60000; // 60 detik
-      const anthemIntervalMs = 90000; // 90 detik
-
-      // Durasi asli Hymne Sinarmas
-      const anthemDuration = 33; // detik (33 detik)
+      const blockIntervalMs = 90000; // 90 detik (patokan saja)
 
       let nextReminderTime = null;
       let nextSirineTime = null;
-      let nextAnthemTime = null;
+      let nextBlockTime = null;
 
       // ================== Start & Stop ==================
-      function startReminder() {
+      function startTest() {
         if (Notification.permission !== "granted") {
           Notification.requestPermission();
         }
 
-        // 🔹 Catat waktu mulai
         const now = new Date();
-        const days = [
-          "Minggu",
-          "Senin",
-          "Selasa",
-          "Rabu",
-          "Kamis",
-          "Jumat",
-          "Sabtu",
-        ];
-        const dayName = days[now.getDay()];
-        const dateStr = now.toLocaleDateString("id-ID");
-        const timeStr = now.toLocaleTimeString("id-ID");
-
         document.getElementById(
           "startTime"
-        ).innerText = `Waktu mulai: ${dayName}, ${dateStr} ${timeStr}`;
+        ).innerText = `Waktu mulai: ${now.toLocaleTimeString("id-ID")}`;
 
-        // Mulai schedule
-        scheduleNextAnthem();
+        scheduleNextBlock();
         scheduleNextSirine();
         scheduleNextReminder();
 
         checker = setInterval(() => {
-          checkAnthem();
+          checkBlock();
           checkSirine();
           checkReminder();
           updateCountdowns();
-          updateClock(); // update jam setiap 0.5 detik
+          updateClock();
         }, 500);
 
         alert(
-          "Test dimulai: Reminder=20s, Sirine=60s, Hymne=90s (prioritas Hymne > Sirine > Reminder jika bersamaan)."
+          "Test dimulai: Reminder=20s, Sirine=60s, Blok Nasional=90s (prioritas: Blok > Sirine > Reminder)."
         );
       }
 
-      function stopReminder() {
+      function stopTest() {
         clearInterval(checker);
         clearInterval(reminderCountdownTimer);
         nextReminderTime = null;
         nextSirineTime = null;
-        nextAnthemTime = null;
+        nextBlockTime = null;
         document.getElementById("countdownReminder").innerText =
           "Reminder umum berikutnya: -";
-        document.getElementById("countdownText").innerText =
+        document.getElementById("countdownSirine").innerText =
           "Sirine berikutnya: -";
-        document.getElementById("countdownAnthem").innerText =
-          "Hymne Sinarmas berikutnya: -";
+        document.getElementById("countdownBlock").innerText =
+          "Blok Nasional berikutnya: -";
         document.getElementById("startTime").innerText = "Waktu mulai: -";
       }
 
@@ -115,9 +105,9 @@
         const now = new Date();
         let candidate = new Date(now.getTime() + reminderIntervalMs);
 
-        // kalau bentrok dengan Hymne atau Sirine, geser
+        // kalau bentrok dengan Blok atau Sirine, geser
         while (
-          (nextAnthemTime && Math.abs(candidate - nextAnthemTime) < 1000) ||
+          (nextBlockTime && Math.abs(candidate - nextBlockTime) < 1000) ||
           (nextSirineTime && Math.abs(candidate - nextSirineTime) < 1000)
         ) {
           candidate = new Date(candidate.getTime() + reminderIntervalMs);
@@ -137,9 +127,10 @@
       }
 
       function triggerReminder() {
-        if (sirineActive || anthemActive) {
-          console.log("Reminder dilewati karena sirine/hymne sedang aktif.");
-          scheduleNextReminder();
+        if (sirineActive || nationalBlockActive) {
+          console.log(
+            "Reminder dilewati karena Sirine / Blok Nasional sedang aktif."
+          );
           return;
         }
 
@@ -176,8 +167,8 @@
         const now = new Date();
         let candidate = new Date(now.getTime() + sirineIntervalMs);
 
-        // kalau bentrok dengan Hymne, geser
-        while (nextAnthemTime && Math.abs(candidate - nextAnthemTime) < 1000) {
+        // kalau bentrok dengan Blok, geser
+        while (nextBlockTime && Math.abs(candidate - nextBlockTime) < 1000) {
           candidate = new Date(candidate.getTime() + sirineIntervalMs);
         }
 
@@ -194,8 +185,8 @@
       }
 
       function playSirine(msg) {
-        if (anthemActive) {
-          console.log("Sirine ditunda karena Hymne sedang aktif.");
+        if (nationalBlockActive) {
+          console.log("Sirine ditunda karena Blok Nasional sedang aktif.");
           return;
         }
 
@@ -207,9 +198,9 @@
         if (Notification.permission === "granted") {
           new Notification("Sirine!", { body: msg });
         }
-        document.getElementById("countdownText").innerText = msg;
+        document.getElementById("countdownSirine").innerText = msg;
 
-        // Anggap durasi sirine 15 detik
+        // contoh durasi sirine 15 detik
         setTimeout(() => {
           sirine.pause();
           sirine.currentTime = 0;
@@ -217,68 +208,76 @@
         }, 15000);
       }
 
-      // ================= Hymne =================
-      function scheduleNextAnthem() {
+      // ================= Blok Nasional (Indonesia Raya + Hymne) =================
+      function scheduleNextBlock() {
         const now = new Date();
-        let candidate = new Date(now.getTime() + anthemIntervalMs);
-        nextAnthemTime = candidate;
+        let candidate = new Date(now.getTime() + blockIntervalMs);
+        nextBlockTime = candidate;
       }
 
-      function checkAnthem() {
-        if (!nextAnthemTime) return;
+      function checkBlock() {
+        if (!nextBlockTime) return;
         const now = new Date();
-        if (now >= nextAnthemTime) {
-          playAnthem("Hymne Sinarmas dimulai!");
-          scheduleNextAnthem();
+        if (now >= nextBlockTime) {
+          playNationalBlock("Blok Nasional dimulai (Indonesia Raya → Hymne)!");
+          scheduleNextBlock();
         }
       }
 
-      function playAnthem(msg) {
-        anthemActive = true;
-        let anthem = document.getElementById("anthemSound");
-        anthem.currentTime = 0;
-        anthem.play();
+      function playNationalBlock(msg) {
+        nationalBlockActive = true;
+
+        let indo = document.getElementById("indoSound");
+        let hymne = document.getElementById("anthemSound");
 
         if (Notification.permission === "granted") {
-          new Notification("Hymne Sinarmas!", { body: msg });
+          new Notification("Blok Nasional!", { body: msg });
         }
-        document.getElementById("countdownAnthem").innerText = msg;
+        document.getElementById("countdownBlock").innerText = msg;
 
-        setTimeout(() => {
-          anthem.pause();
-          anthem.currentTime = 0;
-          anthemActive = false;
-        }, anthemDuration * 1000);
+        // Mainkan Indonesia Raya
+        indo.currentTime = 0;
+        indo.play();
+
+        // Kalau Indonesia Raya selesai → langsung lanjut Hymne
+        indo.onended = () => {
+          indo.currentTime = 0;
+          hymne.currentTime = 0;
+          hymne.play();
+
+          // Kalau Hymne selesai → blok selesai
+          hymne.onended = () => {
+            hymne.currentTime = 0;
+            nationalBlockActive = false;
+          };
+        };
       }
 
-      // ================= Countdown =================
+      // ================= Countdown & Clock =================
       function updateCountdowns() {
         const now = new Date();
 
-        // Hymne
-        if (nextAnthemTime) {
-          let diff = Math.floor((nextAnthemTime - now) / 1000);
+        if (nextBlockTime) {
+          let diff = Math.floor((nextBlockTime - now) / 1000);
           if (diff < 0) diff = 0;
           let minutes = Math.floor(diff / 60);
           let seconds = diff % 60;
           document.getElementById(
-            "countdownAnthem"
-          ).innerText = `Hymne Sinarmas berikutnya: ${minutes} menit ${seconds} detik lagi`;
+            "countdownBlock"
+          ).innerText = `Blok Nasional berikutnya: ${minutes} menit ${seconds} detik lagi`;
         }
 
-        // Sirine
         if (nextSirineTime) {
           let diff = Math.floor((nextSirineTime - now) / 1000);
           if (diff < 0) diff = 0;
           let minutes = Math.floor(diff / 60);
           let seconds = diff % 60;
           document.getElementById(
-            "countdownText"
+            "countdownSirine"
           ).innerText = `Sirine berikutnya: ${minutes} menit ${seconds} detik lagi`;
         }
       }
 
-      // ================= Clock =================
       function updateClock() {
         const now = new Date();
         let hours = now.getHours().toString().padStart(2, "0");
