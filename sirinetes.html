@@ -124,15 +124,16 @@
 
       // Indonesia Raya
       const indonesiaRayaDuration = 110; // 1m50s
-      const indonesiaRayaStartHour = 7;
-      const indonesiaRayaStartMinute = 57;
-      const indonesiaRayaStartSecond = 36;
+      const indonesiaRayaStartHour = 7; // DIUBAH ke 7
+      const indonesiaRayaStartMinute = 50; // DIUBAH ke 50
+      const indonesiaRayaStartSecond = 0; // DIUBAH ke 0
 
       // Hymne Sinarmas
       const anthemDuration = 33; // 33 detik
-      const anthemEndHour = 7;
-      const anthemEndMinute = 59;
-      const anthemEndSecond = 59;
+      // Konstanta di bawah tidak lagi digunakan, waktu mulai dihitung dari waktu selesai Indonesia Raya
+      // const anthemEndHour = 7;
+      // const anthemEndMinute = 59;
+      // const anthemEndSecond = 59;
 
       // ================== Start & Stop ===================
       function startReminder() {
@@ -203,7 +204,9 @@
         const now = new Date();
         let candidate = new Date(now.getTime() + reminderIntervalMs);
 
+        // Logic untuk menghindari konflik dengan semua jadwal prioritas
         while (isConflictWithSchedule(candidate)) {
+          // Jika ada konflik, majukan 1 interval penuh untuk menghindari loop kecil tak terbatas
           candidate = new Date(candidate.getTime() + reminderIntervalMs);
         }
 
@@ -217,16 +220,18 @@
         const now = new Date();
         if (now >= nextReminderTime) {
           triggerReminder();
+          // Penting: Jadwalkan ulang reminder setelah dipicu
           scheduleNextReminder();
         }
       }
 
       function triggerReminder() {
+        // Logika prioritas: Reminder dilewati jika Sirine, Anthem, atau IR sedang aktif
         if (sirineActive || anthemActive || indonesiaRayaActive) {
           console.log(
             "Reminder dilewati karena ada event prioritas lebih tinggi."
           );
-          scheduleNextReminder();
+          scheduleNextReminder(); // Jadwalkan ulang segera
           return;
         }
 
@@ -272,14 +277,48 @@
         return [];
       }
 
+      // Fungsi yang sekarang memeriksa konflik dengan SIRINE, INDONESIA RAYA, dan HYMNE SINARMAS
       function isConflictWithSchedule(date) {
+        // 1. Cek konflik dengan jadwal Sirine (tepat pada menit/jam yang dijadwalkan)
         const todaySchedule = getTodaySchedule();
         const timeStr =
           date.getHours().toString().padStart(2, "0") +
           ":" +
           date.getMinutes().toString().padStart(2, "0") +
           ":00";
-        return todaySchedule.includes(timeStr);
+        if (todaySchedule.includes(timeStr)) return true;
+
+        // 2. Cek konflik dengan durasi pemutaran Indonesia Raya
+        const startIR = getIndonesiaRayaStartTime();
+        const endIR = new Date(
+          startIR.getTime() + indonesiaRayaDuration * 1000
+        );
+
+        // Jika tanggalnya sama dan waktu jatuh di antara IR start dan end time
+        if (
+          date.toDateString() === startIR.toDateString() &&
+          date >= startIR &&
+          date < endIR
+        ) {
+          return true;
+        }
+
+        // 3. Cek konflik dengan durasi pemutaran Hymne Sinarmas
+        const startAnthem = getAnthemStartTime();
+        const endAnthem = new Date(
+          startAnthem.getTime() + anthemDuration * 1000
+        );
+
+        // Jika tanggalnya sama dan waktu jatuh di antara Anthem start dan end time
+        if (
+          date.toDateString() === startAnthem.toDateString() &&
+          date >= startAnthem &&
+          date < endAnthem
+        ) {
+          return true;
+        }
+
+        return false;
       }
 
       function checkSchedule() {
@@ -298,6 +337,7 @@
       }
 
       function playSirine(msg) {
+        // Logika prioritas: Sirine dilewati jika IR atau Anthem sedang aktif
         if (indonesiaRayaActive || anthemActive) {
           console.log(
             "Sirine dilewati karena ada event prioritas lebih tinggi."
@@ -426,21 +466,17 @@
       }
 
       // ================== Lagu Hymne Sinarmas ===================
+      // Waktu mulai Hymne Sinarmas dihitung: IR Start + IR Duration
       function getAnthemStartTime() {
-        const today = new Date();
-        let anthemStart = new Date(today);
-        anthemStart.setHours(
-          anthemEndHour,
-          anthemEndMinute,
-          anthemEndSecond - anthemDuration,
-          0
+        const startIndonesiaRaya = getIndonesiaRayaStartTime();
+        return new Date(
+          startIndonesiaRaya.getTime() + indonesiaRayaDuration * 1000
         );
-        return anthemStart;
       }
 
       function checkAnthem() {
         if (anthemStarted) return;
-        if (indonesiaRayaActive) return;
+        if (indonesiaRayaActive) return; // Penting: Jangan putar Anthem jika IR masih aktif
 
         const now = new Date();
         const anthemStart = getAnthemStartTime();
