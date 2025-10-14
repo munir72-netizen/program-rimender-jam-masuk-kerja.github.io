@@ -2,11 +2,13 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Reminder & Jadwal Kerja</title>
-    <!-- Bootstrap CSS -->
+
     <link href="bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Bootstrap Icons -->
     <link href="bootstrap-icons-1.13.1/bootstrap-icons.css" rel="stylesheet" />
+
     <style>
       #clock {
         font-size: 60px;
@@ -16,11 +18,26 @@
         padding: 20px 40px;
         border-radius: 20px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        transition: font-size 0.3s ease, padding 0.3s ease; /* Transisi untuk responsivitas yang halus */
+      }
+
+      /* Media Query untuk membuat tampilan lebih baik di layar sempit (ponsel) */
+      @media (max-width: 576px) {
+        #clock {
+          font-size: 40px; /* Ukuran font lebih kecil */
+          padding: 15px 30px;
+        }
+        .card {
+          margin: 10px; /* Tambahkan margin agar tidak menempel di pinggir layar */
+        }
+        .card-body {
+          padding: 15px; /* Kurangi padding card body */
+        }
       }
     </style>
   </head>
   <body
-    class="bg-light d-flex justify-content-center align-items-center vh-100"
+    class="bg-light d-flex justify-content-center align-items-center vh-100 p-3"
   >
     <div
       class="card shadow-lg text-center"
@@ -35,7 +52,7 @@
           <button class="btn btn-success" onclick="startReminder()">
             <i class="bi bi-play-fill"></i> Mulai
           </button>
-          <button class="btn btn-danger" onclick="stopReminder()">
+          <button class="btn btn-danger flex-fill" onclick="stopReminder()">
             <i class="bi bi-stop-fill"></i> Stop
           </button>
         </div>
@@ -180,6 +197,7 @@
 
       function stopReminder() {
         clearInterval(scheduleChecker);
+        scheduleChecker = null; // Reset agar bisa dimulai lagi
         clearInterval(reminderCountdownTimer);
         nextReminderTime = null;
         anthemStarted = false;
@@ -197,6 +215,12 @@
           '<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: -';
         document.getElementById("startTime").innerHTML =
           '<i class="bi bi-clock-history"></i> Waktu mulai: -';
+
+        // Hentikan semua audio yang mungkin sedang berjalan
+        document.getElementById("reminderSound").pause();
+        document.getElementById("sirineSound").pause();
+        document.getElementById("indonesiaRaya").pause();
+        document.getElementById("anthem").pause();
       }
 
       // ================== Reminder ===================
@@ -357,10 +381,13 @@
           "countdownText"
         ).innerHTML = `<i class="bi bi-broadcast-pin"></i> ${msg}`;
 
+        // Sirine berhenti setelah 15 detik
         setTimeout(() => {
           sirine.pause();
           sirine.currentTime = 0;
           sirineActive = false;
+          // Perbarui teks countdown setelah sirine berhenti (agar menunjukkan alarm berikutnya lagi)
+          updateCountdownSchedule();
         }, 15000);
       }
 
@@ -384,6 +411,9 @@
             '<i class="bi bi-broadcast-pin"></i> Tidak ada alarm berikutnya hari ini.';
           return;
         }
+
+        // Jangan update jika sirine sedang aktif
+        if (sirineActive) return;
 
         let diff = Math.floor((nextAlarm - now) / 1000);
         let minutes = Math.floor(diff / 60);
@@ -494,7 +524,7 @@
       }
 
       function updateAnthemCountdown() {
-        if (anthemStarted) {
+        if (anthemActive) {
           document.getElementById("anthemCountdown").innerHTML =
             '<i class="bi bi-music-note-beamed"></i> 🎶 Sedang memutar: Hymne Sinarmas';
           return;
@@ -546,6 +576,7 @@
         ).textContent = `${hours}:${minutes}:${seconds}`;
       }
 
+      // Initial call dan loop jam
       setInterval(updateClock, 1000);
       updateClock();
     </script>
