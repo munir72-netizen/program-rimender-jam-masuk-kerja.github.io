@@ -3,43 +3,115 @@
   <head>
     <meta charset="UTF-8" />
     <title>Test Reminder, Sirine & Blok Nasional</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5; /* Warna latar belakang lembut */
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        text-align: center;
+      }
+      h1 {
+        color: #007bff; /* Warna biru untuk judul */
+        font-weight: 600;
+        margin-top: 0;
+      }
+      #clock {
+        font-size: 3em;
+        font-weight: bold;
+        color: #dc3545; /* Warna merah untuk jam */
+        margin-bottom: 20px;
+        letter-spacing: 2px;
+      }
+      .controls {
+        margin-top: 20px;
+        margin-bottom: 30px;
+      }
+      button {
+        padding: 10px 25px;
+        margin: 0 10px;
+        border: none;
+        border-radius: 6px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-weight: 500;
+      }
+      button:first-of-type { /* Mulai */
+        background-color: #28a745; /* Hijau */
+        color: white;
+      }
+      button:first-of-type:hover {
+        background-color: #218838;
+      }
+      button:last-of-type { /* Stop */
+        background-color: #dc3545; /* Merah */
+        color: white;
+      }
+      button:last-of-type:hover {
+        background-color: #c82333;
+      }
+      .countdown-section {
+        margin-top: 25px;
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+      }
+      .countdown-item {
+        font-size: 1.1em;
+        margin: 10px 0;
+        padding: 8px;
+        background-color: #e9ecef;
+        border-left: 5px solid #007bff;
+        border-radius: 4px;
+        text-align: left;
+      }
+      /* Spesifik untuk menyorot countdown */
+      #countdownBlock { border-left-color: #ffc107; } /* Kuning/Blok */
+      #countdownSirine { border-left-color: #dc3545; } /* Merah/Sirine */
+      #countdownReminder { border-left-color: #17a2b8; } /* Biru Muda/Reminder */
+      
+      #startTime {
+          color: #6c757d;
+          font-size: 0.9em;
+          margin-bottom: 5px;
+      }
+    </style>
   </head>
   <body>
-    <h1><div id="clock">00:00:00</div></h1>
-    <h1>Test: Reminder (20s) + Sirine (60s) + Blok Nasional (90s)</h1>
-    <button onclick="startTest()">Mulai</button>
-    <button onclick="stopTest()">Stop</button>
+    <div class="container">
+      <div id="clock">00:00:00</div>
+      <h2>Test: Reminder (20s) + Sirine (60s) + Blok Nasional (90s)</h2>
+      
+      <div class="controls">
+        <button onclick="startTest()">Mulai Test</button>
+        <button onclick="stopTest()">Stop Test</button>
+      </div>
 
-    <!-- Info waktu mulai -->
-    <p id="startTime">Waktu mulai: -</p>
+      <p id="startTime">Waktu mulai: -</p>
 
-    <p id="countdownBlock">Blok Nasional berikutnya: -</p>
-    <p id="countdownSirine">Sirine berikutnya: -</p>
-    <p id="countdownReminder">Reminder umum berikutnya: -</p>
+      <div class="countdown-section">
+        <h3>Jadwal Berikutnya</h3>
+        <p id="countdownBlock" class="countdown-item">Blok Nasional berikutnya: -</p>
+        <p id="countdownSirine" class="countdown-item">Sirine berikutnya: -</p>
+        <p id="countdownReminder" class="countdown-item">Reminder umum berikutnya: -</p>
+      </div>
+    </div>
 
-    <!-- Reminder beep -->
     <audio id="reminderSound" src="chime-2-356833.mp3" preload="auto"></audio>
-
-    <!-- Sirine -->
-    <audio
-      id="sirineSound"
-      src="air-raid-siren-sound-effect-241383.mp3"
-      preload="auto"
-    ></audio>
-
-    <!-- Indonesia Raya -->
-    <audio
-      id="indoSound"
-      src="cut Indonesia Raya 🇮🇩🇮🇩 - Ciptaan W (mp3cut.net).mp3"
-      preload="auto"
-    ></audio>
-
-    <!-- Hymne Sinarmas -->
-    <audio
-      id="anthemSound"
-      src="cut version Hymne Sinar Mas - Sinar Ma.mp3"
-      preload="auto"
-    ></audio>
+    <audio id="sirineSound" src="air-raid-siren-sound-effect-241383.mp3" preload="auto"></audio>
+    <audio id="indoSound" src="cut Indonesia Raya 🇮🇩🇮🇩 - Ciptaan W (mp3cut.net).mp3" preload="auto"></audio>
+    <audio id="anthemSound" src="cut version Hymne Sinar Mas - Sinar Ma.mp3" preload="auto"></audio>
 
     <script>
       let checker;
@@ -68,6 +140,9 @@
           "startTime"
         ).innerText = `Waktu mulai: ${now.toLocaleTimeString("id-ID")}`;
 
+        // Reset dan Jadwalkan ulang semua
+        stopTest(false); // Stop tanpa mereset innerText
+        
         scheduleNextBlock();
         scheduleNextSirine();
         scheduleNextReminder();
@@ -85,19 +160,36 @@
         );
       }
 
-      function stopTest() {
+      function stopTest(resetText = true) {
         clearInterval(checker);
         clearInterval(reminderCountdownTimer);
+        
+        // Hentikan semua suara yang mungkin berputar
+        document.getElementById("reminderSound").pause();
+        document.getElementById("sirineSound").pause();
+        document.getElementById("indoSound").pause();
+        document.getElementById("anthemSound").pause();
+        document.getElementById("reminderSound").currentTime = 0;
+        document.getElementById("sirineSound").currentTime = 0;
+        document.getElementById("indoSound").currentTime = 0;
+        document.getElementById("anthemSound").currentTime = 0;
+        
+        sirineActive = false;
+        nationalBlockActive = false;
+        
         nextReminderTime = null;
         nextSirineTime = null;
         nextBlockTime = null;
-        document.getElementById("countdownReminder").innerText =
-          "Reminder umum berikutnya: -";
-        document.getElementById("countdownSirine").innerText =
-          "Sirine berikutnya: -";
-        document.getElementById("countdownBlock").innerText =
-          "Blok Nasional berikutnya: -";
-        document.getElementById("startTime").innerText = "Waktu mulai: -";
+        
+        if (resetText) {
+             document.getElementById("countdownReminder").innerText =
+               "Reminder umum berikutnya: -";
+             document.getElementById("countdownSirine").innerText =
+               "Sirine berikutnya: -";
+             document.getElementById("countdownBlock").innerText =
+               "Blok Nasional berikutnya: -";
+             document.getElementById("startTime").innerText = "Waktu mulai: -";
+        }
       }
 
       // ================= Reminder =================
@@ -105,7 +197,8 @@
         const now = new Date();
         let candidate = new Date(now.getTime() + reminderIntervalMs);
 
-        // kalau bentrok dengan Blok atau Sirine, geser
+        // Kalau bentrok dengan Blok atau Sirine, geser (dipertahankan dari kode lama)
+        // Note: Penggeseran ini mungkin membuat interval tidak presisi 20s
         while (
           (nextBlockTime && Math.abs(candidate - nextBlockTime) < 1000) ||
           (nextSirineTime && Math.abs(candidate - nextSirineTime) < 1000)
@@ -153,12 +246,7 @@
           const now = new Date();
           let diff = Math.floor((nextReminderTime - now) / 1000);
           if (diff < 0) diff = 0;
-
-          let minutes = Math.floor(diff / 60);
-          let seconds = diff % 60;
-          document.getElementById(
-            "countdownReminder"
-          ).innerText = `Reminder umum berikutnya: ${minutes} menit ${seconds} detik lagi`;
+          updateCountdowns(); // Panggil updateCountdowns dari sini agar berjalan terus
         }, 500);
       }
 
@@ -254,27 +342,39 @@
       }
 
       // ================= Countdown & Clock =================
+      function formatTime(ms) {
+          let diff = Math.floor(ms / 1000);
+          if (diff < 0) return "00:00";
+          let minutes = Math.floor(diff / 60);
+          let seconds = diff % 60;
+          return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+      }
+
       function updateCountdowns() {
         const now = new Date();
 
         if (nextBlockTime) {
-          let diff = Math.floor((nextBlockTime - now) / 1000);
-          if (diff < 0) diff = 0;
-          let minutes = Math.floor(diff / 60);
-          let seconds = diff % 60;
+          const diffMs = nextBlockTime - now;
+          const timeStr = formatTime(diffMs);
           document.getElementById(
             "countdownBlock"
-          ).innerText = `Blok Nasional berikutnya: ${minutes} menit ${seconds} detik lagi`;
+          ).innerText = `Blok Nasional berikutnya: ${timeStr}`;
         }
 
         if (nextSirineTime) {
-          let diff = Math.floor((nextSirineTime - now) / 1000);
-          if (diff < 0) diff = 0;
-          let minutes = Math.floor(diff / 60);
-          let seconds = diff % 60;
+          const diffMs = nextSirineTime - now;
+          const timeStr = formatTime(diffMs);
           document.getElementById(
             "countdownSirine"
-          ).innerText = `Sirine berikutnya: ${minutes} menit ${seconds} detik lagi`;
+          ).innerText = `Sirine berikutnya: ${timeStr}`;
+        }
+        
+        if (nextReminderTime) {
+            const diffMs = nextReminderTime - now;
+            const timeStr = formatTime(diffMs);
+            document.getElementById(
+               "countdownReminder"
+            ).innerText = `Reminder umum berikutnya: ${timeStr}`;
         }
       }
 
@@ -287,6 +387,9 @@
           "clock"
         ).textContent = `${hours}:${minutes}:${seconds}`;
       }
+
+      // Update jam saat halaman dimuat
+      updateClock();
     </script>
   </body>
 </html>
