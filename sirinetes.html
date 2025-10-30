@@ -1,164 +1,188 @@
 <!DOCTYPE html>
 <html lang="id">
+   
   <head>
+       
     <meta charset="UTF-8" />
+       
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+       
     <title>Reminder & Jadwal Kerja</title>
 
+       
     <link href="bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet" />
-    <!-- Bootstrap Icons -->
+           
     <link href="bootstrap-icons-1.13.1/bootstrap-icons.css" rel="stylesheet" />
 
+       
     <style>
-      #clock {
-        font-size: 60px;
-        font-weight: bold;
-        color: white;
-        background: rgb(255, 187, 0);
-        padding: 20px 40px;
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-        transition: font-size 0.3s ease, padding 0.3s ease; /* Transisi untuk responsivitas yang halus */
-      }
+            #clock {
+              font-size: 60px;
+              font-weight: bold;
+              color: white;
+              background: rgb(255, 187, 0);
+              padding: 20px 40px;
+              border-radius: 20px;
+              box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+              transition: font-size 0.3s ease, padding 0.3s ease; /* Transisi untuk responsivitas yang halus */
+            }
 
-      /* Media Query untuk membuat tampilan lebih baik di layar sempit (ponsel) */
-      @media (max-width: 576px) {
-        #clock {
-          font-size: 40px; /* Ukuran font lebih kecil */
-          padding: 15px 30px;
-        }
-        .card {
-          margin: 10px; /* Tambahkan margin agar tidak menempel di pinggir layar */
-        }
-        .card-body {
-          padding: 15px; /* Kurangi padding card body */
-        }
-      }
+            /* Media Query untuk membuat tampilan lebih baik di layar sempit (ponsel) */
+            @media (max-width: 576px) {
+              #clock {
+                font-size: 40px; /* Ukuran font lebih kecil */
+                padding: 15px 30px;
+              }
+              .card {
+                margin: 10px; /* Tambahkan margin agar tidak menempel di pinggir layar */
+              }
+              .card-body {
+                padding: 15px; /* Kurangi padding card body */
+              }
+            }
+         
     </style>
+     
   </head>
+   
   <body
     class="bg-light d-flex justify-content-center align-items-center vh-100 p-3"
   >
+       
     <div
       class="card shadow-lg text-center"
       style="max-width: 500px; width: 100%"
     >
+           
       <div class="card-body">
+               
         <div id="clock" class="mb-4">00:00:00</div>
+               
         <h3 class="card-title mb-4">⏰ Reminder & Jadwal Kerja</h3>
 
-        <!-- Tombol -->
+                       
         <div class="d-flex justify-content-center gap-2 mb-2">
+                   
           <button class="btn btn-success" onclick="startReminder()">
-            <i class="bi bi-play-fill"></i> Mulai
+                        <i class="bi bi-play-fill"></i> Mulai          
           </button>
+                   
           <button class="btn btn-danger flex-fill" onclick="stopReminder()">
-            <i class="bi bi-stop-fill"></i> Stop
+                        <i class="bi bi-stop-fill"></i> Stop          
           </button>
+                 
         </div>
 
-        <!-- Info waktu mulai -->
+                       
         <p id="startTime" class="fw-bold text-info mb-4">
-          <i class="bi bi-clock-history"></i> Waktu mulai: -
+                    <i class="bi bi-clock-history"></i> Waktu mulai: -        
         </p>
 
-        <!-- Reminder -->
+                       
         <div class="p-3 bg-white rounded mb-3 border">
+                   
           <p id="countdownReminder" class="mb-0 fw-bold text-primary">
-            <i class="bi bi-bell-fill"></i> Reminder umum berikutnya: -
+                        <i class="bi bi-bell-fill"></i> Reminder umum
+            berikutnya: -          
           </p>
+                 
         </div>
 
-        <!-- Sirine -->
+                       
         <div class="p-3 bg-white rounded mb-3 border">
+                   
           <p id="countdownText" class="mb-0 fw-bold text-danger">
-            <i class="bi bi-broadcast-pin"></i> Alarm berikutnya: -
+                        <i class="bi bi-broadcast-pin"></i> Alarm berikutnya: -
+                     
           </p>
+                 
         </div>
 
-        <!-- Lagu Indonesia Raya -->
         <div class="p-3 bg-white rounded mb-3 border">
-          <p id="indonesiaRayaCountdown" class="mb-0 fw-bold text-primary">
-            <i class="bi bi-music-note-beamed"></i> Lagu Indonesia Raya: -
+          <p id="nationalBlockCountdown" class="mb-0 fw-bold text-success">
+            <i class="bi bi-music-note-beamed"></i> Blok Nasional (IR & Hymne):
+            -
           </p>
+        </div>
+                       
+        <div class="p-3 bg-white rounded mb-3 border">
+                   
+          <p id="indonesiaRayaCountdown" class="mb-0 fw-bold text-primary">
+                        <i class="bi bi-music-note-beamed"></i> Lagu Indonesia
+            Raya: -          
+          </p>
+                 
         </div>
 
-        <!-- Lagu Hymne Sinarmas -->
+                       
         <div class="p-3 bg-white rounded border">
+                   
           <p id="anthemCountdown" class="mb-0 fw-bold text-success">
-            <i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: -
+                        <i class="bi bi-music-note-beamed"></i> Lagu Hymne
+            Sinarmas: -          
           </p>
+                 
         </div>
+             
       </div>
+         
     </div>
 
-    <!-- Reminder beep -->
+           
     <audio id="reminderSound" src="chime-2-356833.mp3" preload="auto"></audio>
 
-    <!-- Sirine -->
+           
     <audio
       id="sirineSound"
       src="air-raid-siren-sound-effect-241383.mp3"
       preload="auto"
     ></audio>
 
-    <!-- Lagu Indonesia Raya -->
+           
     <audio
       id="indonesiaRaya"
       src="Indonesia Raya 🇮🇩🇮🇩 - Ciptaan W.R. Supratman (Lirik Lagu) - Lagu Kebangsaan Indonesia [A2Uccg2OMtc].mp3"
       preload="auto"
     ></audio>
 
-    <!-- Lagu Hymne Sinarmas -->
+           
     <audio
       id="anthem"
       src="Sinar Mas Song 2020 (Official Video) - Hymne Sinar Mas - Sinar Mas.mp3"
       preload="auto"
     ></audio>
 
+       
     <script>
       let scheduleChecker;
       let reminderCountdownTimer;
       let sirineActive = false;
-      let anthemActive = false;
-      let indonesiaRayaActive = false;
+      let nationalBlockActive = false; // Flag Utama untuk Blok Nasional // Flag pemutaran harian
 
-      // Flag pemutaran harian
-      let anthemStarted = false;
-      let indonesiaRayaStarted = false;
-      let lastAnthemDate = null;
-      let lastIndonesiaRayaDate = null;
+      let nationalBlockStarted = false;
+      let lastNationalBlockDate = null; // Durasi Lagu (dalam detik)
 
-      // Reminder 1 jam sekali
-      const reminderIntervalMs = 3600000;
-      let nextReminderTime = null;
+      const indonesiaRayaDuration = 110; // 1m50s
+      const anthemDuration = 145; // 2m25s detik
+      const totalBlockDuration = indonesiaRayaDuration + anthemDuration; // Total: 255 detik (4 menit 15 detik) // Waktu Mulai Blok Nasional (Indonesia Raya) - DIUBAH KE 08:05:00 UNTUK TES
 
-      // Jadwal Senin–Kamis & Jumat
+      const nationalBlockStartHour = 8;
+      const nationalBlockStartMinute = 22;
+      const nationalBlockStartSecond = 0; // Reminder 1 jam sekali (dalam milidetik)
+
+      const reminderIntervalMs = 3600000; // 1 jam
+      let nextReminderTime = null; // Jadwal Sirine Harian (Senin–Jumat)
+
       const schedule = {
         MonThu: ["08:00:00", "12:00:00", "13:00:00", "17:00:00"],
         Fri: ["08:00:00", "11:30:00", "12:30:00", "17:00:00"],
-      };
+      }; // ================== Start & Stop ===================
 
-      // Indonesia Raya
-      const indonesiaRayaDuration = 110; // 1m50s
-      const indonesiaRayaStartHour = 7; // DIUBAH ke 7
-      const indonesiaRayaStartMinute = 50; // DIUBAH ke 50
-      const indonesiaRayaStartSecond = 0; // DIUBAH ke 0
-
-      // Hymne Sinarmas
-      const anthemDuration = 33; // 33 detik
-      // Konstanta di bawah tidak lagi digunakan, waktu mulai dihitung dari waktu selesai Indonesia Raya
-      // const anthemEndHour = 7;
-      // const anthemEndMinute = 59;
-      // const anthemEndSecond = 59;
-
-      // ================== Start & Stop ===================
       function startReminder() {
         if (Notification.permission !== "granted") {
           Notification.requestPermission();
         }
 
-        // Catat waktu saat tombol Start ditekan
         const now = new Date();
         const days = [
           "Minggu",
@@ -175,62 +199,217 @@
 
         document.getElementById(
           "startTime"
-        ).innerHTML = `<i class="bi bi-clock-history"></i> Waktu mulai: ${dayName}, ${dateStr} ${timeStr}`;
+        ).innerHTML = `<i class="bi bi-clock-history"></i> Waktu mulai: ${dayName}, ${dateStr} ${timeStr}`; // Mendapatkan waktu start Blok Nasional hari ini
 
-        // Mulai jadwal reminder & alarm
-        scheduleNextReminder();
+        const startBlock = getNationalBlockStartTime(); // LOGIKA TAMBAHAN: Cek apakah waktu saat ini (now) sudah melewati jadwal Blok Nasional hari ini. // Jika sudah melewati (dan memiliki tanggal yang sama), anggap sudah diputar untuk hari ini.
+
+        if (
+          startBlock < now &&
+          startBlock.toDateString() === now.toDateString()
+        ) {
+          nationalBlockStarted = true;
+          lastNationalBlockDate = now.toDateString();
+        } else {
+          nationalBlockStarted = false; // Akan dipicu saat 08:05:00
+        }
+
+        scheduleNextReminder(); // Stop dulu jika sudah berjalan
+
+        if (scheduleChecker) stopReminder(); // Panggil sekali di awal untuk update status
+
+        updateNationalBlockCountdown();
+        updateCountdownSchedule();
 
         scheduleChecker = setInterval(() => {
-          checkSchedule();
-          updateCountdownSchedule();
+          checkSchedule(); // Cek Sirine Jadwal
+          checkNationalBlock(); // Cek Blok Nasional
           checkReminder();
-          checkIndonesiaRaya();
-          updateIndonesiaRayaCountdown();
-          checkAnthem();
-          updateAnthemCountdown();
+          updateCountdownSchedule();
+          updateNationalBlockCountdown();
         }, 1000);
 
         alert(
-          "Reminder aktif setiap 1 jam. Prioritas: Indonesia Raya > Hymne Sinarmas > Sirine > Reminder."
+          `Jadwal Prioritas Aktif. Blok Nasional diputar sekali setiap hari pada ${nationalBlockStartHour
+            .toString()
+            .padStart(2, "0")}:${nationalBlockStartMinute
+            .toString()
+            .padStart(2, "0")}. (Mode Uji Coba)`
         );
       }
 
       function stopReminder() {
         clearInterval(scheduleChecker);
-        scheduleChecker = null; // Reset agar bisa dimulai lagi
+        scheduleChecker = null;
         clearInterval(reminderCountdownTimer);
         nextReminderTime = null;
-        anthemStarted = false;
         sirineActive = false;
-        anthemActive = false;
-        indonesiaRayaActive = false;
-        indonesiaRayaStarted = false;
+        nationalBlockActive = false; // Hentikan semua audio dan reset currentTime
+
+        const audios = [
+          "reminderSound",
+          "sirineSound",
+          "indonesiaRaya",
+          "anthem",
+        ];
+        audios.forEach((id) => {
+          const audio = document.getElementById(id);
+          audio.pause();
+          audio.currentTime = 0;
+        });
+
         document.getElementById("countdownReminder").innerHTML =
           '<i class="bi bi-bell-fill"></i> Reminder umum berikutnya: -';
         document.getElementById("countdownText").innerHTML =
-          '<i class="bi bi-broadcast-pin"></i> Alarm berikutnya: -';
+          '<i class="bi bi-broadcast-pin"></i> Alarm berikutnya: -'; // MEMBERSIHKAN ID BARU
+        document.getElementById("nationalBlockCountdown").innerHTML =
+          '<i class="bi bi-music-note-beamed"></i> Blok Nasional (IR & Hymne): -';
         document.getElementById("indonesiaRayaCountdown").innerHTML =
           '<i class="bi bi-music-note-beamed"></i> Lagu Indonesia Raya: -';
         document.getElementById("anthemCountdown").innerHTML =
           '<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: -';
         document.getElementById("startTime").innerHTML =
           '<i class="bi bi-clock-history"></i> Waktu mulai: -';
+      } // ================== Blok Nasional (Indonesia Raya + Hymne) ===================
 
-        // Hentikan semua audio yang mungkin sedang berjalan
-        document.getElementById("reminderSound").pause();
-        document.getElementById("sirineSound").pause();
-        document.getElementById("indonesiaRaya").pause();
-        document.getElementById("anthem").pause();
+      function getNationalBlockStartTime() {
+        const today = new Date();
+        let start = new Date(today);
+        start.setHours(
+          nationalBlockStartHour,
+          nationalBlockStartMinute,
+          nationalBlockStartSecond,
+          0
+        );
+        return start;
       }
 
-      // ================== Reminder ===================
+      function checkNationalBlock() {
+        if (nationalBlockStarted) return;
+
+        const now = new Date();
+        const start = getNationalBlockStartTime();
+
+        if (lastNationalBlockDate === now.toDateString()) return; // KODE BARU: Memberi jendela 5 detik untuk pemicuan (FIXED)
+
+        const endWindow = new Date(start.getTime() + 5000);
+
+        if (now >= start && now < endWindow) {
+          playNationalBlock();
+          nationalBlockStarted = true;
+          lastNationalBlockDate = now.toDateString();
+        }
+      }
+
+      function playNationalBlock() {
+        nationalBlockActive = true;
+
+        let indo = document.getElementById("indonesiaRaya");
+        let hymne = document.getElementById("anthem");
+
+        if (Notification.permission === "granted") {
+          new Notification("Blok Nasional!", {
+            body: "Memutar Indonesia Raya diikuti Hymne Sinarmas.",
+          });
+        }
+        // Mengubah status di elemen Blok Nasional yang baru ditambahkan
+        document.getElementById("nationalBlockCountdown").innerHTML =
+          '<i class="bi bi-music-note-beamed"></i> 🎶 Sedang memutar: Blok Nasional (IR → Hymne)';
+
+        // Membersihkan elemen lagu individual agar tidak membingungkan
+        document.getElementById("indonesiaRayaCountdown").innerHTML =
+          '<i class="bi bi-music-note-beamed"></i> 🎶 Sedang memutar Indonesia Raya';
+        document.getElementById("anthemCountdown").innerHTML =
+          '<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: Menunggu'; // 1. Mainkan Indonesia Raya
+
+        indo.currentTime = 0;
+        indo.play(); // 2. Setelah IR selesai (berdasarkan durasi 110s) → lanjut Hymne
+
+        setTimeout(() => {
+          indo.pause();
+          indo.currentTime = 0;
+          hymne.currentTime = 0;
+          hymne.play();
+
+          document.getElementById("indonesiaRayaCountdown").innerHTML =
+            '<i class="bi bi-music-note-beamed"></i> Lagu Indonesia Raya: Selesai';
+          document.getElementById("anthemCountdown").innerHTML =
+            '<i class="bi bi-music-note-beamed"></i> 🎶 Sedang memutar Hymne Sinarmas'; // 3. Setelah Hymne selesai (setelah 145s tambahan) → Blok selesai
+
+          setTimeout(() => {
+            hymne.pause();
+            hymne.currentTime = 0;
+            nationalBlockActive = false; // Perbarui tampilan setelah blok selesai
+            updateNationalBlockCountdown(); // Reset lagu individual
+            document.getElementById("indonesiaRayaCountdown").innerHTML =
+              '<i class="bi bi-music-note-beamed"></i> Lagu Indonesia Raya: -';
+            document.getElementById("anthemCountdown").innerHTML =
+              '<i class="bi bi-music-note-beamed"></i> Lagu Hymne Sinarmas: -';
+          }, anthemDuration * 1000);
+        }, indonesiaRayaDuration * 1000);
+      }
+
+      function updateNationalBlockCountdown() {
+        // Jika blok sedang aktif diputar, biarkan teks tetap "Sedang memutar..."
+        if (nationalBlockActive) {
+          return;
+        }
+
+        const now = new Date();
+        const start = getNationalBlockStartTime();
+
+        if (now < start) {
+          let diff = Math.floor((start - now) / 1000);
+          let minutes = Math.floor(diff / 60);
+          let seconds = diff % 60;
+          document.getElementById(
+            "nationalBlockCountdown"
+          ).innerHTML = `<i class="bi bi-music-note-beamed"></i> Blok Nasional akan diputar dalam **${minutes} menit ${seconds} detik**`;
+        } else {
+          // KONDISI SUDAH LEWAT
+          document.getElementById("nationalBlockCountdown").innerHTML =
+            '<i class="bi bi-music-note-beamed"></i> Blok Nasional: sudah diputar hari ini.';
+        }
+      } // ... (Sisa fungsi getTodaySchedule, isConflictWithSchedule, Reminder, Sirine, dan Clock sama) // ================== Reminder & Anti-Tabrak ===================
+
+      function getTodaySchedule() {
+        const day = new Date().getDay();
+        if (day >= 1 && day <= 4) return schedule["MonThu"];
+        if (day === 5) return schedule["Fri"];
+        return []; // Sabtu dan Minggu
+      }
+
+      function isConflictWithSchedule(date) {
+        // 1. Cek konflik dengan Jadwal Sirine (tepat pada menit/jam yang dijadwalkan)
+        const todaySchedule = getTodaySchedule();
+        const timeStr =
+          date.getHours().toString().padStart(2, "0") +
+          ":" +
+          date.getMinutes().toString().padStart(2, "0") +
+          ":00";
+        if (todaySchedule.includes(timeStr)) return true; // 2. Cek konflik dengan Durasi Total Blok Nasional (IR + Hymne)
+
+        const startBlock = getNationalBlockStartTime();
+        const endBlock = new Date(
+          startBlock.getTime() + totalBlockDuration * 1000
+        );
+
+        if (
+          date.toDateString() === startBlock.toDateString() &&
+          date >= startBlock &&
+          date < endBlock
+        ) {
+          return true;
+        }
+
+        return false;
+      }
+
       function scheduleNextReminder() {
         const now = new Date();
-        let candidate = new Date(now.getTime() + reminderIntervalMs);
+        let candidate = new Date(now.getTime() + reminderIntervalMs); // Logic untuk menghindari konflik dengan semua jadwal prioritas
 
-        // Logic untuk menghindari konflik dengan semua jadwal prioritas
         while (isConflictWithSchedule(candidate)) {
-          // Jika ada konflik, majukan 1 interval penuh untuk menghindari loop kecil tak terbatas
+          // Jika ada konflik, majukan 1 interval penuh (1 jam)
           candidate = new Date(candidate.getTime() + reminderIntervalMs);
         }
 
@@ -244,18 +423,16 @@
         const now = new Date();
         if (now >= nextReminderTime) {
           triggerReminder();
-          // Penting: Jadwalkan ulang reminder setelah dipicu
           scheduleNextReminder();
         }
       }
 
       function triggerReminder() {
-        // Logika prioritas: Reminder dilewati jika Sirine, Anthem, atau IR sedang aktif
-        if (sirineActive || anthemActive || indonesiaRayaActive) {
+        // Logika prioritas: Reminder dilewati jika Sirine atau Blok Nasional sedang aktif
+        if (sirineActive || nationalBlockActive) {
           console.log(
             "Reminder dilewati karena ada event prioritas lebih tinggi."
           );
-          scheduleNextReminder(); // Jadwalkan ulang segera
           return;
         }
 
@@ -272,78 +449,21 @@
 
       function startReminderCountdown() {
         clearInterval(reminderCountdownTimer);
-
         reminderCountdownTimer = setInterval(() => {
           if (!nextReminderTime) return;
-
           const now = new Date();
           let diff = Math.floor((nextReminderTime - now) / 1000);
-
           if (diff <= 0) {
             clearInterval(reminderCountdownTimer);
             return;
           }
-
           let minutes = Math.floor(diff / 60);
           let seconds = diff % 60;
-
           document.getElementById(
             "countdownReminder"
-          ).innerHTML = `<i class="bi bi-bell-fill"></i> Reminder umum berikutnya: ${minutes} menit ${seconds} detik lagi`;
+          ).innerHTML = `<i class="bi bi-bell-fill"></i> Reminder umum berikutnya: **${minutes} menit ${seconds} detik** lagi`;
         }, 1000);
-      }
-
-      // ================== Jadwal Sirine ===================
-      function getTodaySchedule() {
-        const day = new Date().getDay();
-        if (day >= 1 && day <= 4) return schedule["MonThu"];
-        if (day === 5) return schedule["Fri"];
-        return [];
-      }
-
-      // Fungsi yang sekarang memeriksa konflik dengan SIRINE, INDONESIA RAYA, dan HYMNE SINARMAS
-      function isConflictWithSchedule(date) {
-        // 1. Cek konflik dengan jadwal Sirine (tepat pada menit/jam yang dijadwalkan)
-        const todaySchedule = getTodaySchedule();
-        const timeStr =
-          date.getHours().toString().padStart(2, "0") +
-          ":" +
-          date.getMinutes().toString().padStart(2, "0") +
-          ":00";
-        if (todaySchedule.includes(timeStr)) return true;
-
-        // 2. Cek konflik dengan durasi pemutaran Indonesia Raya
-        const startIR = getIndonesiaRayaStartTime();
-        const endIR = new Date(
-          startIR.getTime() + indonesiaRayaDuration * 1000
-        );
-
-        // Jika tanggalnya sama dan waktu jatuh di antara IR start dan end time
-        if (
-          date.toDateString() === startIR.toDateString() &&
-          date >= startIR &&
-          date < endIR
-        ) {
-          return true;
-        }
-
-        // 3. Cek konflik dengan durasi pemutaran Hymne Sinarmas
-        const startAnthem = getAnthemStartTime();
-        const endAnthem = new Date(
-          startAnthem.getTime() + anthemDuration * 1000
-        );
-
-        // Jika tanggalnya sama dan waktu jatuh di antara Anthem start dan end time
-        if (
-          date.toDateString() === startAnthem.toDateString() &&
-          date >= startAnthem &&
-          date < endAnthem
-        ) {
-          return true;
-        }
-
-        return false;
-      }
+      } // ================== Sirine Jadwal (Jadwal Kerja) ===================
 
       function checkSchedule() {
         const now = new Date();
@@ -361,11 +481,9 @@
       }
 
       function playSirine(msg) {
-        // Logika prioritas: Sirine dilewati jika IR atau Anthem sedang aktif
-        if (indonesiaRayaActive || anthemActive) {
-          console.log(
-            "Sirine dilewati karena ada event prioritas lebih tinggi."
-          );
+        // Logika prioritas: Sirine dilewati jika Blok Nasional sedang aktif
+        if (nationalBlockActive) {
+          console.log("Sirine dilewati karena Blok Nasional sedang aktif.");
           return;
         }
 
@@ -379,15 +497,13 @@
         }
         document.getElementById(
           "countdownText"
-        ).innerHTML = `<i class="bi bi-broadcast-pin"></i> ${msg}`;
+        ).innerHTML = `<i class="bi bi-broadcast-pin"></i> ${msg}`; // Sirine berhenti setelah 15 detik
 
-        // Sirine berhenti setelah 15 detik
         setTimeout(() => {
           sirine.pause();
           sirine.currentTime = 0;
           sirineActive = false;
-          // Perbarui teks countdown setelah sirine berhenti (agar menunjukkan alarm berikutnya lagi)
-          updateCountdownSchedule();
+          updateCountdownSchedule(); // Perbarui teks countdown setelah sirine berhenti
         }, 15000);
       }
 
@@ -412,7 +528,6 @@
           return;
         }
 
-        // Jangan update jika sirine sedang aktif
         if (sirineActive) return;
 
         let diff = Math.floor((nextAlarm - now) / 1000);
@@ -422,150 +537,9 @@
         const timeStr = nextAlarm.toTimeString().split(" ")[0].slice(0, 5);
         document.getElementById(
           "countdownText"
-        ).innerHTML = `<i class="bi bi-broadcast-pin"></i> Alarm berikutnya: ${timeStr} (${minutes} menit ${seconds} detik lagi)`;
-      }
+        ).innerHTML = `<i class="bi bi-broadcast-pin"></i> Alarm berikutnya: ${timeStr} (**${minutes} menit ${seconds} detik** lagi)`;
+      } // ================== Jam Digital ===================
 
-      // ================== Lagu Indonesia Raya ===================
-      function getIndonesiaRayaStartTime() {
-        const today = new Date();
-        let start = new Date(today);
-        start.setHours(
-          indonesiaRayaStartHour,
-          indonesiaRayaStartMinute,
-          indonesiaRayaStartSecond,
-          0
-        );
-        return start;
-      }
-
-      function checkIndonesiaRaya() {
-        if (indonesiaRayaStarted) return;
-
-        const now = new Date();
-        const start = getIndonesiaRayaStartTime();
-
-        if (lastIndonesiaRayaDate === now.toDateString()) return;
-
-        if (now >= start && now <= new Date(start.getTime() + 1000)) {
-          playIndonesiaRaya();
-          indonesiaRayaStarted = true;
-          lastIndonesiaRayaDate = now.toDateString();
-        }
-      }
-
-      function updateIndonesiaRayaCountdown() {
-        if (indonesiaRayaStarted) {
-          document.getElementById("indonesiaRayaCountdown").innerHTML =
-            '<i class="bi bi-music-note-beamed"></i> 🎶 Sedang memutar: Indonesia Raya';
-          return;
-        }
-
-        const now = new Date();
-        const start = getIndonesiaRayaStartTime();
-
-        if (now < start) {
-          let diff = Math.floor((start - now) / 1000);
-          let minutes = Math.floor(diff / 60);
-          let seconds = diff % 60;
-          document.getElementById(
-            "indonesiaRayaCountdown"
-          ).innerHTML = `<i class="bi bi-music-note-beamed"></i> Indonesia Raya akan diputar dalam ${minutes} menit ${seconds} detik`;
-        } else {
-          document.getElementById("indonesiaRayaCountdown").innerHTML =
-            '<i class="bi bi-music-note-beamed"></i> Indonesia Raya: sudah diputar hari ini.';
-        }
-      }
-
-      function playIndonesiaRaya() {
-        indonesiaRayaActive = true;
-        let song = document.getElementById("indonesiaRaya");
-        song.currentTime = 0;
-        song.play();
-
-        if (Notification.permission === "granted") {
-          new Notification("Indonesia Raya!", {
-            body: "Memutar Lagu Indonesia Raya.",
-          });
-        }
-
-        setTimeout(() => {
-          song.pause();
-          song.currentTime = 0;
-          indonesiaRayaActive = false;
-        }, indonesiaRayaDuration * 1000);
-      }
-
-      // ================== Lagu Hymne Sinarmas ===================
-      // Waktu mulai Hymne Sinarmas dihitung: IR Start + IR Duration
-      function getAnthemStartTime() {
-        const startIndonesiaRaya = getIndonesiaRayaStartTime();
-        return new Date(
-          startIndonesiaRaya.getTime() + indonesiaRayaDuration * 1000
-        );
-      }
-
-      function checkAnthem() {
-        if (anthemStarted) return;
-        if (indonesiaRayaActive) return; // Penting: Jangan putar Anthem jika IR masih aktif
-
-        const now = new Date();
-        const anthemStart = getAnthemStartTime();
-
-        if (lastAnthemDate === now.toDateString()) return;
-
-        if (
-          now >= anthemStart &&
-          now <= new Date(anthemStart.getTime() + 1000)
-        ) {
-          playAnthem();
-          anthemStarted = true;
-          lastAnthemDate = now.toDateString();
-        }
-      }
-
-      function updateAnthemCountdown() {
-        if (anthemActive) {
-          document.getElementById("anthemCountdown").innerHTML =
-            '<i class="bi bi-music-note-beamed"></i> 🎶 Sedang memutar: Hymne Sinarmas';
-          return;
-        }
-
-        const now = new Date();
-        const anthemStart = getAnthemStartTime();
-
-        if (now < anthemStart) {
-          let diff = Math.floor((anthemStart - now) / 1000);
-          let minutes = Math.floor(diff / 60);
-          let seconds = diff % 60;
-          document.getElementById(
-            "anthemCountdown"
-          ).innerHTML = `<i class="bi bi-music-note-beamed"></i> Hymne Sinarmas akan diputar dalam ${minutes} menit ${seconds} detik`;
-        } else {
-          document.getElementById("anthemCountdown").innerHTML =
-            '<i class="bi bi-music-note-beamed"></i> Hymne Sinarmas: sudah diputar hari ini.';
-        }
-      }
-
-      function playAnthem() {
-        anthemActive = true;
-        let anthem = document.getElementById("anthem");
-        anthem.currentTime = 0;
-        anthem.play();
-
-        if (Notification.permission === "granted") {
-          new Notification("Hymne Sinarmas!", {
-            body: "Memutar Hymne Sinarmas.",
-          });
-        }
-
-        setTimeout(() => {
-          anthem.pause();
-          anthem.currentTime = 0;
-          anthemActive = false;
-        }, anthemDuration * 1000);
-      }
-
-      // ================== Jam Digital ===================
       function updateClock() {
         const now = new Date();
         let hours = now.getHours().toString().padStart(2, "0");
@@ -574,11 +548,10 @@
         document.getElementById(
           "clock"
         ).textContent = `${hours}:${minutes}:${seconds}`;
-      }
-
-      // Initial call dan loop jam
+      } // Initial call dan loop jam
       setInterval(updateClock, 1000);
       updateClock();
     </script>
+     
   </body>
 </html>
